@@ -1,0 +1,48 @@
+get:
+  parameters:
+    - name: x-api-key
+      in: header
+      required: true
+      schema:
+        type: string
+    - name: x-auth-token
+      in: header
+      required: true
+      schema:
+        type: string
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: ../../../components/schemas/EmptyObject.yaml
+  security:
+    - api_key: []
+  responses:
+    '200':
+      description: 200 response
+      content:
+        application/json:
+          schema:
+            $ref: ../../../components/schemas/GetSample.yaml
+post:
+  parameters:
+    - name: x-api-key
+      in: header
+      required: true
+      schema:
+        type: string
+    - name: x-auth-token
+      in: header
+      required: true
+      schema:
+        type: string
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: ../../../components/schemas/PostSample.yaml
+  security:
+    - api_key: []
+  responses:
+    '200':
+      description: 200 response

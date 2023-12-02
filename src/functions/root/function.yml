@@ -1,0 +1,8 @@
+handler: src/functions/root/handler.main
+events:
+  - http:
+      path: /
+      method: get
+  - http:
+      path: /healthcheck
+      method: get

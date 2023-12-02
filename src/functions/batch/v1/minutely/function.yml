@@ -1,0 +1,5 @@
+handler: src/functions/batch/v1/minutely/handler.main
+events:
+  - schedule:
+      rate: ${self:custom.myEnvironments.CRON_MINUTELY.${sls:stage}}
+      enabled: false

@@ -1,0 +1,10 @@
+STAGE: ${sls:stage}
+TZ: Asia/Tokyo
+AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000'
+REGION: ${self:provider.region}
+DB_DATABASE_NAME: ${self:custom.myEnvironments.DB_DATABASE_NAME.${sls:stage}}
+DB_USER: ${self:provider.stage}Root
+DB_PORT: !GetAtt RDSCluster.Endpoint.Port
+DB_HOST: !GetAtt RDSProxy.Endpoint
+DB_SECRET: !Ref DBSecretManager

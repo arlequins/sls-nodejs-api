@@ -1,0 +1,25 @@
+handler: src/functions/api/v1/handler.main
+memorySize: 512
+events:
+  - http:
+      path: api/v1/sample
+      method: get
+      private: true
+      cors:
+        origins:
+          - ${self:custom.myEnvironments.ALLOWED_ORIGIN.${sls:stage}}
+        headers:
+          - Content-Type
+          - x-auth-token
+          - x-api-key
+  - http:
+      path: api/v1/sample
+      method: post
+      private: true
+      cors:
+        origins:
+          - ${self:custom.myEnvironments.ALLOWED_ORIGIN.${sls:stage}}
+        headers:
+          - Content-Type
+          - x-auth-token
+          - x-api-key

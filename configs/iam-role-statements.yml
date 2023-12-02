@@ -1,0 +1,34 @@
+- Effect: 'Allow'
+  Action: lambda:InvokeFunction
+  Resource:
+    - !Join
+      - ''
+      - - 'arn:aws:lambda:${self:provider.region}:'
+        - !Ref AWS::AccountId
+        - ':function:'
+        - '*'
+- Effect: Allow
+  Action:
+    - logs:PutLogEvents
+    - logs:CreateLogGroup
+    - logs:CreateLogStream
+  Resource:
+    - arn:aws:logs:*:*:*
+- Effect: Allow
+  Action:
+    - ec2:CreateNetworkInterface
+    - ec2:DescribeNetworkInterfaces
+    - ec2:DeleteNetworkInterface
+  Resource:
+    - "*"
+- Effect: 'Allow'
+  Action: secretsmanager:GetSecretValue
+  Resource:
+    - !Ref DBSecretManager
+- Effect: Allow
+  Action:
+    - rds-db:connect
+  Resource:
+    - Fn::GetAtt:
+      - RDSProxy
+      - DBProxyArn

@@ -1,0 +1,20 @@
+openapi: 3.0.1
+info:
+  title: sls-nodejs-api
+  version: '2022-09-22T06:14:31Z'
+servers:
+  - url: https://sample.net/develop
+paths:
+  /:
+    $ref: paths/root.yaml
+  /healthcheck:
+    $ref: paths/healthcheck.yaml
+  /api/v1/sample:
+    $ref: paths/api/v1/sample.yaml
+
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: x-api-key
+      in: header

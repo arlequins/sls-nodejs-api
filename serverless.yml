@@ -1,0 +1,49 @@
+service: sls-nodejs-api
+
+frameworkVersion: 3
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  timeout: 28
+  memorySize: 512
+  versionFunctions: false
+  endpointType: REGIONAL
+  region: ap-northeast-1
+  stage: ${opt:stage, self:custom.defaultStage}
+  logRetentionInDays: ${self:custom.myEnvironments.LOG_RETENTION_IN_DAYS.${sls:stage}}
+  tags: ${file(configs/tags.yml)}
+  environment: ${file(configs/environments.yml)}
+  iam:
+    role:
+      statements: ${file(configs/iam-role-statements.yml)}
+  logs: ${file(configs/logs.yml)}
+
+resources: ${file(configs/resources.yml)}
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-tscpaths
+  - serverless-add-api-key
+  - serverless-vpc-plugin
+  - serverless-offline
+
+custom:
+  defaultStage: offline
+  serverless-offline:
+    httpPort: 4000
+    apiKey: 'dev'
+  apiKeys: ${file(configs/custom-api-keys.yml)}
+  myEnvironments: ${file(configs/my-environments.yml)}
+  vpcConfig: ${file(configs/vpc-config.yml)}
+
+functions:
+  root: ${file(src/functions/root/function.yml)}
+
+  # api
+  api-v1: ${file(src/functions/api/v1/function.yml)}
+
+  # batch
+  batch-v1-minutely: ${file(src/functions/batch/v1/minutely/function.yml)}

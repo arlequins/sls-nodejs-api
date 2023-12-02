@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "ESNext"
+    ],
+    "moduleResolution": "node",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "removeComments": true,
+    "sourceMap": true,
+    "target": "es6",
+    "module": "commonjs",
+    "rootDir": "./",
+    "baseUrl": "./",
+    "paths": {
+      "@functions/*": ["src/functions/*"],
+      "@libs/*": ["src/libs/*"],
+      "@settings/*": ["src/settings/*"],
+      "@typing/*": ["src/types/*"],
+      "@typing": ["src/types"],
+      "@constants/*": ["src/constants/*"],
+      "@constants": ["src/constants"],
+      "@tests/*": ["src/tests/*"],
+    },
+    "outDir": "lib",
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "**/*.ts"
+  ],
+  "exclude": [
+    "node_modules/**/*",
+    ".serverless/**/*",
+    ".webpack/**/*",
+    "_warmup/**/*",
+    ".vscode/**/*"
+  ]
+}

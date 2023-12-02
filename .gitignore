@@ -1,0 +1,46 @@
+# package directories
+node_modules
+jspm_packages
+
+# Serverless directories
+.serverless
+
+# Webpack directories
+.webpack
+
+# Yarn
+yarn-error.log
+
+# Coverage
+coverage
+
+# Dotenv
+.env*
+!.env.example
+
+# Serverless directories
+.serverless
+
+# package directories
+node_modules
+
+.build
+/build
+
+openapi.yml
+
+src/settings/env.json
+.DS_Store
+
+# system
+Cache
+CachedData
+User
+TransportSecurity
+Network Persistent State
+blob_storage
+Backups
+CachedConfigurations
+CachedExtensions
+logs
+Preferences
