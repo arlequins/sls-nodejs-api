@@ -1,0 +1,25 @@
+apis:
+  api@develop:
+    root: ./docs/openapi/split/openapi.yaml
+    labels:
+      - develop
+    decorators:
+      plugin/replace-servers-url:
+        serverUrl: "https://domain.com/develop"
+  api@production:
+    root: ./docs/openapi/split/openapi.yaml
+    labels:
+      - production
+    decorators:
+      plugin/replace-servers-url:
+        serverUrl: "https://domain.com/production"
+features.openapi:
+  generateCodeSamples:
+    languages:
+      - lang: curl
+      - lang: JavaScript
+      - lang: Node.js
+plugins:
+  - "./docs/openapi/plugins/plugin.js"
+extends:
+  - recommended

@@ -1,0 +1,31 @@
+type: object
+properties:
+  active:
+    type: boolean
+  te:
+    type: object
+    description: 'only if the status is true'
+    properties:
+      name:
+        type: string
+      price:
+        type: number
+      period:
+        type: string
+        pattern: ^\d{4}year\d{1,2}month\d{1,2}day$
+        example: test1
+      cancelAtPeriod:
+        type: boolean
+  testaa:
+    type: object
+    description: 'only if the status is true'
+    properties:
+      url:
+        type: string
+  test:
+    type: object
+    description: 'only if the status is false'
+    properties:
+      url:
+        type: string
+

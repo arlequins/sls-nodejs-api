@@ -1,0 +1,173 @@
+Resources:
+  DBClusterParameterGroup:
+    Type: "AWS::RDS::DBClusterParameterGroup"
+    Properties:
+      Description: "Aurora PostgreSQL Parameter Group"
+      Family: aurora-postgresql15
+      Parameters:
+        rds.force_ssl: 1
+
+  RDSCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      DatabaseName: ${self:custom.myEnvironments.DB_DATABASE_NAME.${sls:stage}}
+      DBClusterIdentifier: !Sub ${self:service}-${self:provider.stage}-aurora-psql
+      DBClusterParameterGroupName: !Ref DBClusterParameterGroup
+      DBSubnetGroupName: !Ref RDSSubnetGroup
+      EnableHttpEndpoint: true
+      MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref DBSecretManager, ':SecretString:username}}' ]]
+      MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref DBSecretManager, ':SecretString:password}}' ]]
+      Engine: aurora-postgresql
+      EngineMode: provisioned
+      EngineVersion: 15.3
+      ServerlessV2ScalingConfiguration:
+        MaxCapacity: ${self:custom.myEnvironments.DB_V2_MAX_CAPACITY.${sls:stage}, 2}
+        MinCapacity: ${self:custom.myEnvironments.DB_V2_MIN_CAPACITY.${sls:stage}, 0.5}
+      StorageEncrypted: true
+      BackupRetentionPeriod: ${self:custom.myEnvironments.DB_BACKUP_RETENTION_PERIOD.${sls:stage}, 1}
+      DeletionProtection: ${self:custom.myEnvironments.DB_DELETION_PROTECTION.${sls:stage}, false}
+      VpcSecurityGroupIds:
+        - !Ref DBSecurityGroup
+      Port: 5432
+
+  RDSParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: Aurora Parameter Group
+      Family: aurora-postgresql15
+
+  RDSInstance1:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBParameterGroupName: !Ref RDSParameterGroup
+      Engine: aurora-postgresql
+      EngineVersion: 15.3
+      DBClusterIdentifier: !Ref RDSCluster
+      PubliclyAccessible: false
+      DBInstanceClass: db.serverless
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs
+          Ref: AWS::Region
+
+  DBSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: "RDS Security Group"
+      SecurityGroupEgress:
+        - Description: "deny all outbound"
+          IpProtocol: "-1"
+          CidrIp: "127.0.0.1/32"
+      SecurityGroupIngress:
+        - Description: "permit PostgreSQL (5432) from AppSecurityGroup"
+          FromPort: 5432
+          IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt AppSecurityGroup.GroupId
+          ToPort: 5432
+      VpcId: !Ref VPC
+
+  DBSecretManager:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub "${self:service}-${self:provider.stage}-AuroraUserSecret"
+      Description: RDS database auto-generated user password
+      GenerateSecretString:
+        SecretStringTemplate: !Sub '{"username": "${self:provider.stage}Root"}'
+        GenerateStringKey: "password"
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+
+  # Create IAM role for proxy uses to access secrets in AWS Secrets Manager
+  # https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-proxy.html#rds-proxy-iam-setup
+  SecretIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ${self:service}-${self:provider.stage}-secret-manager-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - rds.amazonaws.com
+          Action:
+            - sts:AssumeRole
+      Policies:
+        - PolicyName: ${self:service}-${self:provider.stage}-secret-manager-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetRandomPassword
+                  - secretsmanager:CreateSecret
+                  - secretsmanager:ListSecrets
+                Resource: "*"
+        - PolicyName: ${self:service}-${self:provider.stage}-secret-manager
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  # - secretsmanager:GetSecretValue
+                  # - secretsmanager:GetResourcePolicy
+                  # - secretsmanager:DescribeSecret
+                  # - secretsmanager:ListSecretVersionIds
+                  # - secretsmanager:CreateSecret
+                  # - secretsmanager:ListSecrets
+                  # - secretsmanager:GetRandomPassword
+                  - secretsmanager:*
+                Resource:
+                  Ref: DBSecretManager
+  # RDS Proxy with Secret Manager
+  RDSProxy:
+    Type: AWS::RDS::DBProxy
+    Properties:
+      Auth:
+        - AuthScheme: SECRETS
+          IAMAuth: DISABLED
+          SecretArn:
+            Ref: DBSecretManager
+      DBProxyName: ${self:service}-${self:provider.stage}-db-proxy
+      DebugLogging: false
+      # test
+      EngineFamily: POSTGRESQL
+      RoleArn:
+        Fn::GetAtt:
+          - SecretIAMRole
+          - Arn
+      VpcSecurityGroupIds: # Same security group with RDS
+        - !Ref DBSecurityGroup
+      VpcSubnetIds: # Only private subnet
+        - !Ref "DBSubnet1"
+        - !Ref "DBSubnet2"
+
+  ProxyTargetGroup:
+    Type: AWS::RDS::DBProxyTargetGroup
+    Properties:
+      DbProxyName: ${self:service}-${self:provider.stage}-db-proxy
+      TargetGroupName: default
+      DBClusterIdentifiers:
+        - !Ref RDSCluster
+    DependsOn: RDSProxy
+
+Outputs:
+  DBProxyArn:
+    Value:
+      Fn::GetAtt:
+        - RDSProxy
+        - DBProxyArn
+    Export:
+      Name: ${self:service}:${self:provider.stage}:DBProxyArn
+  Endpoint:
+    Value:
+      Fn::GetAtt:
+        - RDSProxy
+        - Endpoint
+    Export:
+      Name: ${self:service}:${self:provider.stage}:Endpoint
+  SecretsManager:
+    Value:
+      Ref: DBSecretManager
+    Export:
+      Name: ${self:service}:${self:provider.stage}:SecretsManager

@@ -1,0 +1,17 @@
+# see https://www.serverless.com/plugins/serverless-vpc-plugin
+enabled: true
+cidrBlock: '10.0.0.0/16'
+createNatGateway: ${self:custom.myEnvironments.VPC_NAT_GATEWAY_COUNT.${sls:stage}}
+createNetworkAcl: false
+createDbSubnet: true
+createFlowLogs: false
+createBastionHost: ${self:custom.myEnvironments.BASTION_HOST.${sls:stage}}
+bastionHostKeyName: ${self:custom.myEnvironments.BASTION_HOST_KEY_NAME.${sls:stage}}
+createNatInstance: false
+createParameters: false
+zones:
+  - ap-northeast-1a # DBSubnet1
+  - ap-northeast-1c # DBSubnet2
+subnetGroups:
+  - rds
+exportOutputs: true

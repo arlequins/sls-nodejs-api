@@ -1,0 +1,48 @@
+VPC_NAT_GATEWAY_COUNT:
+  offline: 1
+  develop: 1
+  production: 2
+LOG_RETENTION_IN_DAYS:
+  offline: 14
+  develop: 14
+  production: 400
+DB_V2_MAX_CAPACITY:
+  offline: 1
+  develop: 1
+  production: 4
+DB_V2_MIN_CAPACITY:
+  offline: 0.5
+  develop: 0.5
+  production: 0.5
+DB_AUTO_PAUSE:
+  offline: true
+  develop: true
+  production: false
+DB_BACKUP_RETENTION_PERIOD:
+  offline: 0
+  develop: 1
+  production: 7
+DB_DELETION_PROTECTION:
+  offline: false
+  develop: false
+  production: true
+DB_DATABASE_NAME:
+  offline: dboffline
+  develop: dbdevelop
+  production: dbproduction
+BASTION_HOST:
+  offline: false
+  develop: true
+  production: true
+BASTION_HOST_KEY_NAME:
+  offline: develop-bastion
+  develop: develop-bastion
+  production: production-bastion
+ALLOWED_ORIGIN:
+  offline: http://localhost:5173
+  develop: https://sample.net
+  production: https://sample.net
+CRON_MINUTELY: # NEED TO SET UTC
+  offline: cron(* * * * ? *)
+  develop: cron(* 0-12 ? * MON-FRI *)
+  production: cron(* 22-23,0-12 ? * MON-SUN *)

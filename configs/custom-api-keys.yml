@@ -1,0 +1,9 @@
+- name: ${opt:stage, self:custom.defaultStage}-api
+  usagePlan:
+    name: 'frontend-api-key-usage-plan'
+    quota:
+      limit: 10000
+      period: DAY
+    throttle:
+      burstLimit: 200
+      rateLimit: 100
